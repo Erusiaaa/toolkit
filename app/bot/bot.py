@@ -1,4 +1,5 @@
 import logging
+import random
 from html import escape
 from pathlib import Path
 
@@ -7,7 +8,7 @@ from telegram.constants import ParseMode
 from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ContextTypes
 
 from app.config import settings
-from app.crud import get_designs_by_tag, get_or_create_user, get_random_design, save_design_for_user
+from app.crud import get_designs_by_tag, get_or_create_user, get_public_alias, get_random_design, save_design_for_user
 from app.database import SessionLocal
 from app.seed import seed_db
 from app.seed_data import TAG_LABELS
@@ -17,11 +18,17 @@ LAST_DESIGN: dict[int, int] = {}
 BASE_DIR = Path(__file__).resolve().parents[1] / "static" / "images"
 
 
-def keyboard_for_design(user_id: int, design_id: int):
+def gallery_url(user_id: int, username: str | None):
+    if username:
+        return f"{settings.public_base_url}/u/{username.lstrip('@')}"
+    return f"{settings.public_base_url}/gallery/{user_id}"
+
+
+def keyboard_for_design(user_id: int, username: str | None, design_id: int):
     return InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Save", callback_data=f"save:{design_id}")],
-            [InlineKeyboardButton("Open gallery", url=f"{settings.public_base_url}/gallery/{user_id}")],
+            [InlineKeyboardButton("Open gallery", url=gallery_url(user_id, username))],
         ]
     )
 
@@ -39,7 +46,7 @@ async def send_design(update: Update, design):
             photo=InputFile(image_file, filename=image_path.name),
             caption=caption_for_design(design),
             parse_mode=ParseMode.HTML,
-            reply_markup=keyboard_for_design(update.effective_user.id, design.id),
+            reply_markup=keyboard_for_design(update.effective_user.id, update.effective_user.username, design.id),
         )
 
 
@@ -47,12 +54,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
     try:
         user = update.effective_user
-        get_or_create_user(db, str(user.id), user.username, user.first_name)
+        created = get_or_create_user(db, str(user.id), user.username, user.first_name)
+        alias = get_public_alias(created)
     finally:
         db.close()
     await update.message.reply_text(
-        "Use /random, /long, /short, /solid, /creative, /save, and /my."
+        f"Use /random, /long, /short, /solid, /creative, /save, and /my.\nYour alias: {alias}"
     )
+
 
 async def random_design(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = SessionLocal()
@@ -76,7 +85,7 @@ async def tag_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not designs:
         await update.message.reply_text(f"No designs found for {tag}.")
         return
-    await send_design(update, designs[0])
+    await send_design(update, random.choice(designs))
 
 
 async def save_current(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -94,7 +103,7 @@ async def save_current(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def my_gallery(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"{settings.public_base_url}/gallery/{update.effective_user.id}")
+    await update.message.reply_text(gallery_url(update.effective_user.id, update.effective_user.username))
 
 
 async def save_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):

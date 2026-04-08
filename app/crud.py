@@ -1,4 +1,5 @@
 import random
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from . import models
@@ -36,6 +37,35 @@ def get_or_create_user(db: Session, telegram_id: str, username: str | None = Non
     db.add(user)
     db.commit()
     db.refresh(user)
+    return user
+
+
+def get_public_alias(user: models.User) -> str:
+    if user.username:
+        return user.username.lstrip("@")
+    return f"user{user.telegram_id}"
+
+
+def get_user_by_alias(db: Session, alias: str):
+    needle = alias.strip().lstrip("@")
+    if not needle:
+        return None
+
+    user = db.query(models.User).filter(func.lower(models.User.username) == needle.lower()).first()
+    if user:
+        return user
+
+    if needle.startswith("user") and needle[4:].isdigit():
+        user = db.query(models.User).filter(models.User.telegram_id == needle[4:]).first()
+        if user:
+            return user
+
+    if needle.isdigit():
+        user = db.query(models.User).filter(models.User.telegram_id == needle).first()
+        if user:
+            return user
+
+    user = db.query(models.User).filter(func.lower(models.User.first_name) == needle.lower()).first()
     return user
 
 

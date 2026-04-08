@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="topbar">
+  <div class="brand-group">
+    <div class="brand-name">Nail Inspo</div>
+  </div>
+  <nav class="top-actions">
+    <div class="theme-switch" aria-label="Theme switch">
+      <button class="theme-btn is-active" data-theme-value="dark" type="button">Dark</button>
+      <button class="theme-btn" data-theme-value="light" type="button">Light</button>
+    </div>
+    <a href="#" class="book-btn">Book manicure</a>
+  </nav>
+</header>
+
+<div class="section-divider"></div>
+
+<section class="login-hero">
+  <div class="login-copy">
+    <p class="eyebrow">Personal saved gallery</p>
+    <h1 class="login-title">Open your nail board</h1>
+    <p class="login-text">Enter your alias to view your saved inspiration. Use the same alias you use in Telegram.</p>
+    {% if error %}
+    <p class="login-error">{{ error }}</p>
+    {% endif %}
+    <form action="/open-gallery" method="get" class="alias-form">
+      <input type="text" name="alias" value="{{ alias_value or '' }}" class="alias-input" placeholder="Enter your alias" required />
+      <button type="submit" class="open-btn">Open gallery</button>
+    </form>
+  </div>
+  <div class="login-note">
+    <span>nail ideas</span>
+    <span>♡ i love ♡</span>
+  </div>
+</section>
+{% endblock %}

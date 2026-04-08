@@ -1,6 +1,4 @@
 :root {
-  --radius-lg: 20px;
-  --radius-md: 16px;
   --font-serif: "Playfair Display", serif;
   --font-ui: "Inter", sans-serif;
   --font-script: "Allura", cursive;
@@ -8,7 +6,6 @@
 
 body[data-theme="dark"] {
   --bg: #1f1716;
-  --card: #2b201f;
   --text: #f6eee8;
   --muted: #ccb8af;
   --line: rgba(255,255,255,0.08);
@@ -18,13 +15,14 @@ body[data-theme="dark"] {
   --chip-active-text: #2e2221;
   --button: #d7b2ae;
   --button-text: #2f2321;
-  --heart: #efc2c0;
+  --card: #2b201f;
+  --input: #2b201f;
   --note: #cfaaa8;
+  --error: #efc2c0;
 }
 
 body[data-theme="light"] {
   --bg: #fbf7f3;
-  --card: #fffaf7;
   --text: #342927;
   --muted: #8b7671;
   --line: rgba(59,41,38,0.08);
@@ -34,8 +32,10 @@ body[data-theme="light"] {
   --chip-active-text: #342927;
   --button: #d7b1ad;
   --button-text: #342927;
-  --heart: #d4a7a5;
+  --card: #fffaf7;
+  --input: #fffdfb;
   --note: #c89f9d;
+  --error: #b56a73;
 }
 
 * { box-sizing: border-box; }
@@ -51,7 +51,7 @@ body {
 
 img { display: block; width: 100%; }
 a { color: inherit; text-decoration: none; }
-button { font: inherit; }
+button, input { font: inherit; }
 
 .site-shell {
   width: min(1280px, calc(100% - 40px));
@@ -72,6 +72,12 @@ button { font: inherit; }
   font-size: 2rem;
   font-weight: 500;
   letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-top: 4px;
 }
 
 .top-actions {
@@ -114,9 +120,112 @@ button { font: inherit; }
   font-weight: 600;
 }
 
+.ghost-link {
+  color: var(--muted);
+  padding: 8px 2px;
+}
+
 .section-divider {
   height: 1px;
   background: var(--line);
+}
+
+.login-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  padding: 42px 0 24px;
+}
+
+.eyebrow {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.8rem;
+  margin: 0 0 18px;
+}
+
+.login-title,
+.hero-title,
+.empty-state h3 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.login-title {
+  font-size: clamp(3.2rem, 6vw, 5.6rem);
+  line-height: 0.94;
+  max-width: 8ch;
+}
+
+.login-text,
+.hero-text,
+.empty-state p {
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 36ch;
+}
+
+.login-error {
+  margin: 18px 0 0;
+  color: var(--error);
+  font-weight: 600;
+}
+
+.alias-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.alias-input {
+  min-width: 280px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--input);
+  color: var(--text);
+  outline: none;
+}
+
+.open-btn {
+  padding: 14px 22px;
+  border: none;
+  border-radius: 999px;
+  background: var(--button);
+  color: var(--button-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-note,
+.hero-note {
+  color: var(--note);
+  font-family: var(--font-script);
+  font-size: 2.3rem;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: right;
+  padding-top: 34px;
+  min-width: 180px;
+}
+
+.login-note span,
+.hero-note span {
+  display: block;
+}
+
+.login-note span:last-child,
+.hero-note span:last-child {
+  margin-top: 10px;
+  font-size: 1.7rem;
 }
 
 .hero-panel {
@@ -131,61 +240,10 @@ button { font: inherit; }
   margin-bottom: 20px;
 }
 
-.hero-copy-main { min-width: 0; }
-
 .hero-title {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 500;
   font-size: clamp(3rem, 5vw, 4.9rem);
   line-height: 0.95;
-  letter-spacing: -0.04em;
   max-width: 7ch;
-}
-
-.hero-heart {
-  display: inline-block;
-  color: var(--heart);
-  font-size: 0.58em;
-  margin-left: 10px;
-  position: relative;
-  top: -0.06em;
-}
-  
-
-.hero-title-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hero-title-row .hero-title {
-  margin: 0;
-}
-
-.hero-text {
-  margin: 18px 0 0;
-  color: var(--muted);
-  font-size: 1.02rem;
-  line-height: 1.55;
-  max-width: 24ch;
-}
-
-.hero-note {
-  color: var(--note);
-  font-family: var(--font-script);
-  font-size: 2.2rem;
-  line-height: 1;
-  white-space: nowrap;
-  text-align: right;
-  padding-top: 26px;
-  min-width: 180px;
-}
-
-.hero-note span { display: block; }
-.hero-note span:last-child {
-  margin-top: 10px;
-  font-size: 1.65rem;
 }
 
 .filters {
@@ -194,7 +252,9 @@ button { font: inherit; }
   gap: 10px;
 }
 
-.hero-filters { margin-top: 8px; }
+.hero-filters {
+  margin-top: 8px;
+}
 
 .filter-chip {
   padding: 11px 16px;
@@ -238,7 +298,9 @@ button { font: inherit; }
   transition: transform 0.35s ease;
 }
 
-.pin-card:hover .pin-image { transform: scale(1.02); }
+.pin-card:hover .pin-image {
+  transform: scale(1.02);
+}
 
 .remove-pin {
   position: absolute;
@@ -248,29 +310,15 @@ button { font: inherit; }
   height: 34px;
   border: none;
   border-radius: 50%;
-  background: rgba(255,255,255,0.88);
-  color: var(--heart);
-  font-size: 1.15rem;
+  background: rgba(255,255,255,0.9);
+  color: var(--note);
+  font-size: 1.1rem;
   cursor: pointer;
   z-index: 2;
 }
 
 .empty-state {
-  padding: 26px 0;
-}
-
-.empty-state h3 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  font-weight: 500;
-}
-
-.empty-state p {
-  margin: 12px 0 0;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 42ch;
+  padding: 28px 0;
 }
 
 @media (max-width: 1100px) {
@@ -280,16 +328,18 @@ button { font: inherit; }
 @media (max-width: 860px) {
   .site-shell { width: min(100% - 24px, 100%); }
   .topbar { flex-direction: column; align-items: stretch; }
-  .top-actions { justify-content: space-between; }
+  .top-actions { justify-content: space-between; flex-wrap: wrap; }
+  .login-hero,
   .hero-copy { flex-direction: column; }
+  .login-note,
   .hero-note { text-align: left; padding-top: 0; }
   .masonry-grid { column-count: 2; }
 }
 
 @media (max-width: 560px) {
   .brand-name { font-size: 1.65rem; }
+  .login-title { font-size: 2.8rem; }
   .hero-title { font-size: 2.6rem; max-width: 8ch; }
-  .hero-note { font-size: 1.8rem; }
   .masonry-grid { column-count: 1; }
-  .book-btn { padding: 11px 16px; }
+  .alias-input { min-width: 100%; width: 100%; }
 }

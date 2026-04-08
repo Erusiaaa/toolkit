@@ -1,20 +1,18 @@
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Query, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from .config import settings
 from .crud import (
-    get_all_catalog_designs,
     get_designs_by_tag,
     get_saved_designs_for_user,
     get_saved_tags_for_user,
-    get_random_design,
+    get_user_by_alias,
     remove_saved_design_for_user,
-    save_design_for_user,
     serialize_design,
 )
 from .database import get_db
@@ -32,26 +30,7 @@ def startup_event():
     seed_db()
 
 
-@app.get("/", response_class=HTMLResponse)
-def homepage(request: Request, tag: str | None = Query(default=None), db: Session = Depends(get_db)):
-    designs = get_designs_by_tag(db, tag) if tag else get_all_catalog_designs(db)
-    return templates.TemplateResponse(
-        "gallery.html",
-        {
-            "request": request,
-            "designs": [serialize_design(item) for item in designs],
-            "tags": list(TAG_LABELS.keys()),
-            "tag_labels": TAG_LABELS,
-            "active_tag": tag,
-            "telegram_id": None,
-            "page_title": "Curated catalog",
-            "is_demo": True,
-        },
-    )
-
-
-@app.get("/gallery/{telegram_id}", response_class=HTMLResponse)
-def gallery_page(request: Request, telegram_id: str, tag: str | None = Query(default=None), db: Session = Depends(get_db)):
+def render_gallery(request: Request, telegram_id: str, alias: str, tag: str | None, db: Session):
     return templates.TemplateResponse(
         "gallery.html",
         {
@@ -61,26 +40,61 @@ def gallery_page(request: Request, telegram_id: str, tag: str | None = Query(def
             "tag_labels": TAG_LABELS,
             "active_tag": tag,
             "telegram_id": telegram_id,
+            "alias": alias,
             "page_title": "Saved gallery",
-            "is_demo": False,
         },
     )
 
 
-@app.get("/api/random")
-def api_random(db: Session = Depends(get_db)):
-    design = get_random_design(db)
-    return serialize_design(design) if design else {"message": "No designs found"}
+@app.get("/", response_class=HTMLResponse)
+def homepage(request: Request, error: str | None = None, alias: str | None = None):
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "error": error,
+            "alias_value": alias or "",
+            "page_title": "Open your gallery",
+        },
+    )
+
+
+@app.get("/open-gallery")
+def open_gallery(alias: str, db: Session = Depends(get_db)):
+    user = get_user_by_alias(db, alias)
+    if not user:
+        return RedirectResponse(url=f"/?error=Alias not found&alias={alias}", status_code=302)
+    clean_alias = (user.username or f"user{user.telegram_id}").lstrip("@")
+    return RedirectResponse(url=f"/u/{clean_alias}", status_code=302)
+
+
+@app.get("/u/{alias}", response_class=HTMLResponse)
+def gallery_by_alias(request: Request, alias: str, tag: str | None = Query(default=None), db: Session = Depends(get_db)):
+    user = get_user_by_alias(db, alias)
+    if not user:
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Alias not found",
+                "alias_value": alias,
+                "page_title": "Open your gallery",
+            },
+        )
+    clean_alias = (user.username or f"user{user.telegram_id}").lstrip("@")
+    return render_gallery(request, user.telegram_id, clean_alias, tag, db)
+
+
+@app.get("/gallery/{telegram_id}", response_class=HTMLResponse)
+def gallery_page(request: Request, telegram_id: str, tag: str | None = Query(default=None), db: Session = Depends(get_db)):
+    user = get_user_by_alias(db, f"user{telegram_id}")
+    alias = (user.username or f"user{telegram_id}").lstrip("@") if user else f"user{telegram_id}"
+    return render_gallery(request, telegram_id, alias, tag, db)
 
 
 @app.get("/api/by_tag/{tag}")
 def api_by_tag(tag: str, db: Session = Depends(get_db)):
     return [serialize_design(item) for item in get_designs_by_tag(db, tag)]
-
-
-@app.post("/api/save/{telegram_id}/{design_id}")
-def api_save(telegram_id: str, design_id: int, db: Session = Depends(get_db)):
-    return {"saved": save_design_for_user(db, telegram_id, design_id)}
 
 
 @app.post("/api/remove/{telegram_id}/{design_id}")

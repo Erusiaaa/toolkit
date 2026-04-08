@@ -1,82 +1,169 @@
-# Nails & Inspiration
+# Nail Inspo
 
-Telegram bot + web gallery for nail inspiration.
+A web app and Telegram bot for collecting and organizing nail design inspiration in one place.
 
-## How it works
+---
 
-There are two layers:
+## Demo
 
-1. **Main design catalog**
-   - fixed set of nail images inside the project
-   - every design has tags
-   - the Telegram bot searches here
+The product consists of two parts:
 
-2. **Saved collection**
-   - when the user presses save, the chosen design is linked to that Telegram user
-   - the website shows only saved images for that user
+- Telegram bot for browsing and saving nail designs  
+- Web gallery for viewing and managing saved inspiration  
 
-So the logic is:
+---
 
-- `/random` -> random design from the full catalog
-- `/long`, `/short`, `/solid`, `/creative` -> designs from the full catalog by tag
-- `/save` -> save the current design to favorites
-- `/my` -> open the personal web gallery
+## Product context
 
-## Where to change images and tags
+### End users
+Young women (18–30) looking for manicure inspiration before visiting a nail artist.
 
-### Images
-Put your own images into:
+### Problem
+Users usually save nail ideas in different places:
+- phone gallery  
+- Pinterest boards  
+- social media  
+- chats  
 
-```bash
-app/static/images/designs/
+As a result, inspiration becomes:
+- scattered  
+- hard to organize  
+- difficult to revisit  
+
+### Solution
+Nail Inspo provides a single space where users can:
+- browse nail designs via Telegram  
+- save favorite ideas instantly  
+- access a personal gallery on the web  
+- filter and manage saved designs  
+
+---
+
+## Features
+
+### Version 1 (Core functionality)
+- Telegram bot:
+  - `/random` — get a random nail design  
+  - `/short`, `/long`, `/solid`, `/creative` — filter by tags  
+  - `/save` — save current design  
+  - `/my` — open personal gallery  
+- Web:
+  - gallery of saved designs  
+  - tag-based filtering  
+- Backend:
+  - FastAPI + PostgreSQL  
+  - persistent storage  
+
+---
+
+### Version 2 (Final version)
+- Alias-based login (no registration required)  
+- Multi-user support  
+- Personal gallery per user  
+- Remove saved designs directly from the website  
+- Improved UI:
+  - Pinterest-style layout  
+  - dark/light theme  
+  - clean minimal aesthetic  
+
+---
+
+### Not implemented (future improvements)
+- recommendation system  
+- uploading own designs  
+- personalized suggestions  
+- cloud synchronization  
+- Telegram OAuth login  
+
+---
+
+## Usage
+
+### Website
+1. Open the website  
+2. Enter your alias (Telegram username)  
+3. View your saved designs  
+4. Remove items by clicking the heart icon  
+
+---
+
+### Telegram bot
+
+Commands:
+```
+/random
+/short
+/long
+/solid
+/creative
+/save
+/my
 ```
 
-### Tags, titles, and descriptions
-Edit:
+Typical flow:
+1. Browse designs  
+2. Save favorites  
+3. Open your gallery using `/my`  
 
+---
+
+## Architecture
+
+- Backend: FastAPI  
+- Database: PostgreSQL  
+- ORM: SQLAlchemy  
+- Frontend: Jinja2 templates + CSS  
+- Telegram bot: python-telegram-bot  
+- Deployment: Docker Compose  
+
+---
+
+## Deployment
+
+### OS
+Ubuntu 24.04  
+
+### Requirements
+- Docker  
+- Docker Compose  
+
+Install dependencies:
 ```bash
-app/seed_data.py
+sudo apt update
+sudo apt install docker.io docker-compose -y
 ```
 
-Example:
+---
 
-```python
-{
-    "image": "designs/design_01.jpg",
-    "title": "Soft french",
-    "description": "Clean white French set",
-    "tags": ["long", "solid"]
-}
-```
-
-After you change images or tags, run:
+### Run the project
 
 ```bash
-docker compose down -v
+git clone https://github.com/Erusiaaa/se-toolkit-hackathon.git
+cd se-toolkit-hackathon
+cp .env.example .env
+```
+
+Edit `.env`:
+- add your Telegram bot token  
+- set public URL  
+
+Then run:
+
+```bash
 docker compose up --build
 ```
 
-## Run locally or on VM
+---
 
-1. Copy `.env.example` to `.env`
-2. Paste your Telegram bot token into `.env`
-3. Run:
+### Access
 
-```bash
-docker compose up --build
+Open in browser:
+```
+http://<VM-IP>:8000
 ```
 
-4. Open:
+---
 
-```text
-http://YOUR_VM_IP:8000
-```
+## One-sentence pitch
 
-
-## Theme switch
-
-The website includes two themes:
-- Dark Luxe (default)
-- Light Luxe
-
-The selected theme is saved in the browser.
+Nail Inspo helps users collect and organize nail inspiration through a Telegram bot and a personal web gallery.

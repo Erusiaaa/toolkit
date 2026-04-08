@@ -3,12 +3,16 @@
 <header class="topbar">
   <div class="brand-group">
     <div class="brand-name">Nail Inspo</div>
+    {% if alias %}
+    <div class="brand-subtitle">@{{ alias }}</div>
+    {% endif %}
   </div>
   <nav class="top-actions">
     <div class="theme-switch" aria-label="Theme switch">
       <button class="theme-btn is-active" data-theme-value="dark" type="button">Dark</button>
       <button class="theme-btn" data-theme-value="light" type="button">Light</button>
     </div>
+    <a href="/" class="ghost-link">Change alias</a>
     <a href="#" class="book-btn">Book manicure</a>
   </nav>
 </header>
@@ -18,7 +22,7 @@
 <section class="hero-panel">
   <div class="hero-copy">
     <div class="hero-copy-main">
-      <h1 class="hero-title">My saved<br>inspiration <span class="hero-heart">♡</span></h1>
+      <h1 class="hero-title">My saved inspiration</h1>
       <p class="hero-text">All your favorite nail designs, saved just for you.</p>
     </div>
     <div class="hero-note">
@@ -29,9 +33,9 @@
 
   {% if tags %}
   <div class="filters hero-filters">
-    <a class="filter-chip {% if not active_tag %}is-active{% endif %}" href="{% if telegram_id %}/gallery/{{ telegram_id }}{% else %}/{% endif %}">All</a>
+    <a class="filter-chip {% if not active_tag %}is-active{% endif %}" href="/u/{{ alias }}">All</a>
     {% for tag in tags %}
-      <a class="filter-chip {% if active_tag == tag %}is-active{% endif %}" href="{% if telegram_id %}/gallery/{{ telegram_id }}?tag={{ tag }}{% else %}/?tag={{ tag }}{% endif %}">
+      <a class="filter-chip {% if active_tag == tag %}is-active{% endif %}" href="/u/{{ alias }}?tag={{ tag }}">
         {{ tag_labels.get(tag, tag.title()) }}
       </a>
     {% endfor %}
@@ -46,9 +50,7 @@
   <div class="masonry-grid">
     {% for design in designs %}
       <article class="pin-card" data-design-id="{{ design.id }}">
-        {% if telegram_id %}
         <button class="remove-pin" data-telegram-id="{{ telegram_id }}" data-design-id="{{ design.id }}" aria-label="Remove from saved">♡</button>
-        {% endif %}
         <img src="{{ design.image_src }}" alt="{{ design.title }}" class="pin-image" />
       </article>
     {% endfor %}
@@ -56,7 +58,7 @@
   {% else %}
   <div class="empty-state">
     <h3>No saved designs yet</h3>
-    <p>Open the Telegram bot, choose a design with /random or /long /short /solid /creative, then press save.</p>
+    <p>Save designs in Telegram with /random, /long, /short, /solid, or /creative, then open your alias here.</p>
   </div>
   {% endif %}
 </section>
